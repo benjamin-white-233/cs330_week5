@@ -4,6 +4,7 @@
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glad/glad.h>
+#include <stb_image.h>
 
 Application::Application(std::string WindowTitle, int width, int height)
     : _applicationName{ WindowTitle }, _width{ width }, _height{ height },
@@ -171,8 +172,28 @@ void Application::setupScene() {
     pyramid.Transform = glm::translate(pyramid.Transform, glm::vec3(1.f, -0.5f, 0.0f));
 
     // declaring paths to shaderfiles
-    Path shaderPath = std::filesystem::current_path() / "shaders";
+    Path shaderPath = std::filesystem::current_path() / "assets" / "shaders";
     _shader = Shader( shaderPath / "basic_shader.vert" , shaderPath / "basic_shader.frag");
+
+    // loading texture
+    Path texturePath = std::filesystem::current_path() / "assets" / "textures";
+    auto containerPath = (texturePath / "container.jpg").string();
+    int width, height, numChannels;
+    unsigned char* data = stbi_load(containerPath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
+
+    glGenTextures(1, &_containerTexture);
+    glBindTexture(GL_TEXTURE_2D, _containerTexture);
+
+    if (data) {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,  GL_UNSIGNED_BYTE, data);
+//        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, width, height);
+//        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cerr << "Failed to load texture at path: " << containerPath << std::endl;
+    }
+    stbi_image_free(data);
 }
 
 bool Application::update(float deltaTime) {
@@ -197,6 +218,8 @@ bool Application::draw() {
     _shader.Bind();
     _shader.SetMat4("projection", projection);
     _shader.SetMat4("view", view);
+
+    glBindTexture(GL_TEXTURE_2D, _containerTexture);
 
     // draw each mesh
     for (auto& mesh : _meshes) {

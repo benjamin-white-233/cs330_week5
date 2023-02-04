@@ -43,4 +43,6 @@ private:
     glm::vec2 _cameraLookSpeed {};
 
     float _lastFrameTime { -1.f };
+
+    GLuint _containerTexture;
 };
