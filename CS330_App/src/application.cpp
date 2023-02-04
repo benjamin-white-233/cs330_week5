@@ -175,24 +175,26 @@ void Application::setupScene() {
     Path shaderPath = std::filesystem::current_path() / "assets" / "shaders";
     _shader = Shader( shaderPath / "basic_shader.vert" , shaderPath / "basic_shader.frag");
 
-    // loading texture
+    // defining path to texture file
     Path texturePath = std::filesystem::current_path() / "assets" / "textures";
     auto containerPath = (texturePath / "container.jpg").string();
+
     int width, height, numChannels;
+    // loading texture
     unsigned char* data = stbi_load(containerPath.c_str(), &width, &height, &numChannels, STBI_rgb_alpha);
 
+    // generating and binding texture
     glGenTextures(1, &_containerTexture);
     glBindTexture(GL_TEXTURE_2D, _containerTexture);
 
     if (data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,  GL_UNSIGNED_BYTE, data);
-//        glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA, width, height);
-//        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else {
         std::cerr << "Failed to load texture at path: " << containerPath << std::endl;
     }
+    // delete data origin
     stbi_image_free(data);
 }
 
